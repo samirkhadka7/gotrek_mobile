@@ -102,7 +102,6 @@ class RegisterScreen extends StatelessWidget {
               // Login Link
               TextButton(
                 onPressed: () {
-                  // Back jancha
                   Navigator.pop(context);
                 },
                 child: Text(
@@ -117,3 +116,4 @@ class RegisterScreen extends StatelessWidget {
     );
   }
 }
+
