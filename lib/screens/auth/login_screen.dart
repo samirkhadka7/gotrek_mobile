@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:gotrek/screens/bottom_navigation_screen.dart';
 import 'register_screen.dart';
-import '../home/home_screen.dart';
+// import '../home/home_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   @override
@@ -84,7 +85,7 @@ class LoginScreen extends StatelessWidget {
                     
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => HomeScreen()),
+                      MaterialPageRoute(builder: (context) => BottonNavigationScreen()),
                     );
                   },
                   child: Text(
@@ -117,5 +118,6 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
+
 
 
