@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'onboarding_screen_1.dart';
 import 'onboarding_screen_2.dart';
 import 'onboarding_screen_3.dart';
-import '../auth/login_screen.dart';
+import 'package:gotrek/features/auth/presentation/screens/login_screen.dart';
 
 class OnboardingMain extends StatefulWidget {
   @override

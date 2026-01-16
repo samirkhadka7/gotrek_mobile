@@ -1,6 +1,6 @@
 
 import 'package:flutter/material.dart';
-import 'package:gotrek/screens/auth/login_screen.dart';
+import 'package:gotrek/features/auth/presentation/screens/login_screen.dart';
 import 'package:gotrek/screens/bottom_screens/admin_bottom_screens.dart';
 import 'package:gotrek/screens/bottom_screens/group_bottom_screen.dart';
 import 'package:gotrek/screens/bottom_screens/home_bottom_screen.dart';
