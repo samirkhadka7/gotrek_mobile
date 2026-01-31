@@ -1,7 +1,24 @@
-import 'package:gotrek/features/auth/domain/entities/user.dart';
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failure.dart';
+import '../entities/user_entity.dart';
 
 abstract class AuthRepository {
-  Future<void> registerUser(User user);
-  Future<User?> loginUser(String email, String password);
-  Future<bool> isUserRegistered(String email);
+  Future<Either<Failure, UserEntity>> signUp({
+    required String username,
+    required String email,
+    required String password,
+    String? fullName,
+    String? phone,
+  });
+  
+  Future<Either<Failure, UserEntity>> login({
+    required String username,
+    required String password,
+  });
+  
+  Future<Either<Failure, void>> logout();
+  
+  Future<Either<Failure, UserEntity?>> getCurrentUser();
+  
+  Future<Either<Failure, bool>> isLoggedIn();
 }
