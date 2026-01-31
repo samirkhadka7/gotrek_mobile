@@ -1,40 +1,97 @@
-import 'package:gotrek/features/auth/data/datasources/auth_local_data_source.dart';
-import 'package:gotrek/features/auth/data/models/user_hive_model.dart';
-import 'package:gotrek/features/auth/domain/entities/user.dart';
-import 'package:gotrek/features/auth/domain/repositories/auth_repository.dart';
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failure.dart';
+import '../../domain/entities/user_entity.dart';
+import '../../domain/repositories/auth_repository.dart';
+import '../datasources/auth_remote_datasource.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
-  final AuthLocalDataSource localDataSource;
+  final AuthRemoteDataSource remoteDataSource;
 
-  AuthRepositoryImpl(this.localDataSource);
-
-  @override
-  Future<void> registerUser(User user) async {
-    final userHiveModel = UserHiveModel(
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      password: user.password,
-    );
-    await localDataSource.registerUser(userHiveModel);
-  }
+  AuthRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<User?> loginUser(String email, String password) async {
-    final userHiveModel = await localDataSource.loginUser(email, password);
-    if (userHiveModel != null) {
-      return User(
-        id: userHiveModel.id,
-        name: userHiveModel.name,
-        email: userHiveModel.email,
-        password: userHiveModel.password,
+  Future<Either<Failure, UserEntity>> signUp({
+    required String username,
+    required String email,
+    required String password,
+    String? fullName,
+    String? phone,
+  }) async {
+    try {
+      // Validation
+      if (username.isEmpty || username.length < 3) {
+        return const Left(ValidationFailure(message: 'Username must be at least 3 characters'));
+      }
+      if (email.isEmpty || !email.contains('@')) {
+        return const Left(ValidationFailure(message: 'Please enter a valid email'));
+      }
+      if (password.isEmpty || password.length < 6) {
+        return const Left(ValidationFailure(message: 'Password must be at least 6 characters'));
+      }
+
+      final user = await remoteDataSource.signUp(
+        username: username,
+        email: email,
+        password: password,
+        fullName: fullName,
+        phone: phone,
       );
+      return Right(user);
+    } catch (e) {
+      return Left(AuthFailure(message: e.toString().replaceAll('Exception: ', '')));
     }
-    return null;
   }
 
   @override
-  Future<bool> isUserRegistered(String email) async {
-    return await localDataSource.isUserRegistered(email);
+  Future<Either<Failure, UserEntity>> login({
+    required String username,
+    required String password,
+  }) async {
+    try {
+      if (username.isEmpty) {
+        return const Left(ValidationFailure(message: 'Username cannot be empty'));
+      }
+      if (password.isEmpty) {
+        return const Left(ValidationFailure(message: 'Password cannot be empty'));
+      }
+
+      final user = await remoteDataSource.login(
+        username: username,
+        password: password,
+      );
+      return Right(user);
+    } catch (e) {
+      return Left(AuthFailure(message: e.toString().replaceAll('Exception: ', '')));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> logout() async {
+    try {
+      await remoteDataSource.logout();
+      return const Right(null);
+    } catch (e) {
+      return Left(DatabaseFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntity?>> getCurrentUser() async {
+    try {
+      final user = await remoteDataSource.getCurrentUser();
+      return Right(user);
+    } catch (e) {
+      return Left(DatabaseFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> isLoggedIn() async {
+    try {
+      final result = remoteDataSource.isLoggedIn();
+      return Right(result);
+    } catch (e) {
+      return Left(DatabaseFailure(message: e.toString()));
+    }
   }
 }
