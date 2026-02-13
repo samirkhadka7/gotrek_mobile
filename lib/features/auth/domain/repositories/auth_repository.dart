@@ -19,6 +19,10 @@ abstract class AuthRepository {
   Future<Either<Failure, void>> logout();
   
   Future<Either<Failure, UserEntity?>> getCurrentUser();
+
+  Future<Either<Failure, UserEntity>> uploadProfileImage({
+    required String filePath,
+  });
   
   Future<Either<Failure, bool>> isLoggedIn();
 }

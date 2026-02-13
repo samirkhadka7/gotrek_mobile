@@ -28,3 +28,9 @@ class LogoutEvent extends AuthEvent {}
 class CheckAuthStatusEvent extends AuthEvent {}
 
 class GetCurrentUserEvent extends AuthEvent {}
+
+class UploadProfileImageEvent extends AuthEvent {
+  final String filePath;
+
+  UploadProfileImageEvent({required this.filePath});
+}

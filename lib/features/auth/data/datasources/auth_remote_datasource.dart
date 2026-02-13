@@ -20,6 +20,10 @@ abstract class AuthRemoteDataSource {
   Future<void> logout();
   
   Future<UserModel?> getCurrentUser();
+
+  Future<UserModel> uploadProfileImage({
+    required String filePath,
+  });
   
   bool isLoggedIn();
 }
@@ -121,6 +125,31 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
     
     return null;
+  }
+
+  @override
+  Future<UserModel> uploadProfileImage({
+    required String filePath,
+  }) async {
+    final token = HiveService.getToken();
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    final response = await apiService.postMultipart(
+      ApiConstants.uploadProfileImage,
+      filePath: filePath,
+      fieldName: 'image',
+      token: token,
+    );
+
+    if (response['success'] == true) {
+      final userData = response['data'];
+      await HiveService.saveUserData(userData);
+      return UserModel.fromJson(userData);
+    } else {
+      throw Exception(response['message']);
+    }
   }
 
   @override

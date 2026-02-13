@@ -23,4 +23,5 @@ class ApiConstants {
   static String get signup => '$baseUrl/auth/signup';
   static String get login => '$baseUrl/auth/login';
   static String get getMe => '$baseUrl/auth/me';
+  static String get uploadProfileImage => '$baseUrl/auth/upload-profile-image';
 }
