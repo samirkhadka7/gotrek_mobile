@@ -86,6 +86,22 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Either<Failure, UserEntity>> uploadProfileImage({
+    required String filePath,
+  }) async {
+    try {
+      if (filePath.isEmpty) {
+        return const Left(ValidationFailure(message: 'Image path cannot be empty'));
+      }
+
+      final user = await remoteDataSource.uploadProfileImage(filePath: filePath);
+      return Right(user);
+    } catch (e) {
+      return Left(AuthFailure(message: e.toString().replaceAll('Exception: ', '')));
+    }
+  }
+
+  @override
   Future<Either<Failure, bool>> isLoggedIn() async {
     try {
       final result = remoteDataSource.isLoggedIn();

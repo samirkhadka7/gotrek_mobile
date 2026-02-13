@@ -9,6 +9,7 @@ class UserModel extends UserEntity {
     required super.email,
     super.fullName,
     super.phone,
+    super.profileImageUrl,
     required super.createdAt,
     this.token,
   });
@@ -21,6 +22,7 @@ class UserModel extends UserEntity {
       email: json['email'] ?? '',
       fullName: json['fullName'],
       phone: json['phone'],
+      profileImageUrl: json['profileImageUrl'],
       createdAt: json['createdAt'] != null 
           ? DateTime.parse(json['createdAt']) 
           : DateTime.now(),
@@ -36,6 +38,7 @@ class UserModel extends UserEntity {
       'email': email,
       'fullName': fullName,
       'phone': phone,
+      'profileImageUrl': profileImageUrl,
       'createdAt': createdAt.toIso8601String(),
       'token': token,
     };
@@ -48,6 +51,7 @@ class UserModel extends UserEntity {
       email: email,
       fullName: fullName,
       phone: phone,
+      profileImageUrl: profileImageUrl,
       createdAt: createdAt,
     );
   }

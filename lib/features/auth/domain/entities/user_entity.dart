@@ -4,6 +4,7 @@ class UserEntity {
   final String email;
   final String? fullName;
   final String? phone;
+  final String? profileImageUrl;
   final DateTime createdAt;
 
   const UserEntity({
@@ -12,6 +13,7 @@ class UserEntity {
     required this.email,
     this.fullName,
     this.phone,
+    this.profileImageUrl,
     required this.createdAt,
   });
 }

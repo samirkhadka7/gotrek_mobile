@@ -29,6 +29,26 @@ class ApiService {
     return _handleResponse(response);
   }
 
+  // Multipart POST request (file upload)
+  Future<Map<String, dynamic>> postMultipart(
+    String url, {
+    required String filePath,
+    String fieldName = 'image',
+    String? token,
+  }) async {
+    final request = http.MultipartRequest('POST', Uri.parse(url));
+
+    if (token != null) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
+
+    request.files.add(await http.MultipartFile.fromPath(fieldName, filePath));
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+    return _handleResponse(response);
+  }
+
   // Headers
   Map<String, String> _getHeaders(String? token) {
     final headers = {
@@ -42,12 +62,19 @@ class ApiService {
 
   // Response handler
   Map<String, dynamic> _handleResponse(http.Response response) {
-    final body = jsonDecode(response.body);
-    
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      return body;
-    } else {
-      throw Exception(body['message'] ?? 'Something went wrong');
+    try {
+      final body = jsonDecode(response.body);
+      
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return body;
+      } else {
+        throw Exception(body['message'] ?? 'Something went wrong');
+      }
+    } catch (e) {
+      print('Response parsing error: $e');
+      print('Status code: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      throw Exception('Invalid response format: ${e.toString()}');
     }
   }
 }

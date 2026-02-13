@@ -3,6 +3,7 @@ import '../../domain/usecases/signup_usecase.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import '../../domain/usecases/get_current_user_usecase.dart';
+import '../../domain/usecases/upload_profile_image_usecase.dart';
 import '../../../../core/usecase/usecase.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -12,18 +13,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final LoginUseCase loginUseCase;
   final LogoutUseCase logoutUseCase;
   final GetCurrentUserUseCase getCurrentUserUseCase;
+  final UploadProfileImageUseCase uploadProfileImageUseCase;
 
   AuthBloc({
     required this.signUpUseCase,
     required this.loginUseCase,
     required this.logoutUseCase,
     required this.getCurrentUserUseCase,
+    required this.uploadProfileImageUseCase,
   }) : super(AuthInitial()) {
     on<LoginEvent>(_onLogin);
     on<SignUpEvent>(_onSignUp);
     on<LogoutEvent>(_onLogout);
     on<CheckAuthStatusEvent>(_onCheckAuthStatus);
     on<GetCurrentUserEvent>(_onGetCurrentUser);
+    on<UploadProfileImageEvent>(_onUploadProfileImage);
   }
 
   Future<void> _onLogin(LoginEvent event, Emitter<AuthState> emit) async {
@@ -93,6 +97,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     result.fold(
       (failure) => emit(AuthError(failure.message)),
       (user) => user != null ? emit(AuthAuthenticated(user)) : emit(AuthUnauthenticated()),
+    );
+  }
+
+  Future<void> _onUploadProfileImage(UploadProfileImageEvent event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    final result = await uploadProfileImageUseCase(
+      UploadProfileImageParams(filePath: event.filePath),
+    );
+
+    result.fold(
+      (failure) => emit(AuthError(failure.message)),
+      (user) => emit(AuthAuthenticated(user)),
     );
   }
 }
