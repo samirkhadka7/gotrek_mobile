@@ -1,6 +1,5 @@
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/network/api_service.dart';
-import '../../../../core/network/hive_service.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
@@ -11,21 +10,18 @@ abstract class AuthRemoteDataSource {
     String? fullName,
     String? phone,
   });
-  
-  Future<UserModel> login({
-    required String username,
-    required String password,
-  });
-  
+
+  Future<UserModel> login({required String email, required String password});
+
   Future<void> logout();
-  
-  Future<UserModel?> getCurrentUser();
+
+  /// Get current user details - requires auth token
+  Future<UserModel?> getCurrentUser({String? token});
 
   Future<UserModel> uploadProfileImage({
     required String filePath,
+    String? token,
   });
-  
-  bool isLoggedIn();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -54,106 +50,119 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
     if (response['success'] == true) {
       final userData = response['data'];
-      
-      // Save token locally
-      await HiveService.saveToken(userData['token']);
-      await HiveService.saveUserData(userData);
-      
-      return UserModel.fromJson(userData);
+      final token = response['token'];
+
+      print('✓ SIGNUP API RESPONSE: Success');
+      print('✓ Token received: ${token != null ? 'Yes' : 'No'}');
+
+      // Note: Repository will handle saving token and user data via localDataSource
+      return UserModel.fromJson(userData, token: token as String?);
     } else {
+      print('✗ SIGNUP FAILED: ${response['message']}');
       throw Exception(response['message']);
     }
   }
 
   @override
   Future<UserModel> login({
-    required String username,
+    required String email,
     required String password,
   }) async {
-    final response = await apiService.post(
-      ApiConstants.login,
-      body: {
-        'username': username,
-        'password': password,
-      },
-    );
+    try {
+      final response = await apiService.post(
+        ApiConstants.login,
+        body: {'email': email, 'password': password},
+      );
 
-    if (response['success'] == true) {
-      final userData = response['data'];
-      
-      // Save token locally
-      await HiveService.saveToken(userData['token']);
-      await HiveService.saveUserData(userData);
-      
-      return UserModel.fromJson(userData);
-    } else {
-      throw Exception(response['message']);
+      print('✓ LOGIN API RESPONSE: $response');
+
+      if (response['success'] == true) {
+        final userData = response['data'];
+        final token = response['token'];
+
+        print(
+          '✓ Login successful - User: ${userData['email']}, Token: ${token != null ? 'Present' : 'Missing'}',
+        );
+
+        // Note: Repository will handle saving token and user data via localDataSource
+        return UserModel.fromJson(userData, token: token as String?);
+      } else {
+        print('✗ Login failed: ${response['message']}');
+        throw Exception(response['message'] ?? 'Login failed');
+      }
+    } catch (e) {
+      print('✗ LOGIN ERROR: $e');
+      rethrow;
     }
   }
 
   @override
   Future<void> logout() async {
-    await HiveService.clearAll();
+    try {
+      await apiService.post(
+        ApiConstants.login,
+      ); // You might have a logout endpoint
+      print('✓ Logout successful');
+    } catch (e) {
+      print('⚠ Logout API error: $e');
+      // Don't throw - logout should succeed even if API call fails
+    }
   }
 
   @override
-  Future<UserModel?> getCurrentUser() async {
-    // First check local storage
-    final localData = HiveService.getUserData();
-    if (localData != null) {
-      return UserModel.fromJson(Map<String, dynamic>.from(localData));
+  Future<UserModel?> getCurrentUser({String? token}) async {
+    if (token == null || token.isEmpty) {
+      print('⚠ getCurrentUser called without token');
+      return null;
     }
-    
-    // If token exists, fetch from API
-    final token = HiveService.getToken();
-    if (token != null) {
-      try {
-        final response = await apiService.get(
-          ApiConstants.getMe,
-          token: token,
-        );
-        
-        if (response['success'] == true) {
-          final userData = response['data'];
-          await HiveService.saveUserData(userData);
-          return UserModel.fromJson(userData);
-        }
-      } catch (e) {
-        // Token expired or invalid
-        await HiveService.clearAll();
+
+    try {
+      final response = await apiService.get(ApiConstants.getMe, token: token);
+
+      print('✓ GET /me API RESPONSE: ${response['success']}');
+
+      if (response['success'] == true) {
+        final userData = response['data'];
+        return UserModel.fromJson(userData, token: token);
+      } else {
+        print('✗ Get current user failed: ${response['message']}');
+        return null;
       }
+    } catch (e) {
+      print('✗ GET CURRENT USER ERROR: $e');
+      rethrow;
     }
-    
-    return null;
   }
 
   @override
   Future<UserModel> uploadProfileImage({
     required String filePath,
+    String? token,
   }) async {
-    final token = HiveService.getToken();
-    if (token == null) {
-      throw Exception('No token found');
+    if (token == null || token.isEmpty) {
+      throw Exception('Authentication token required for profile image upload');
     }
 
-    final response = await apiService.postMultipart(
-      ApiConstants.uploadProfileImage,
-      filePath: filePath,
-      fieldName: 'image',
-      token: token,
-    );
+    try {
+      final response = await apiService.postMultipart(
+        ApiConstants.uploadProfileImage,
+        filePath: filePath,
+        fieldName: 'image',
+        token: token,
+      );
 
-    if (response['success'] == true) {
-      final userData = response['data'];
-      await HiveService.saveUserData(userData);
-      return UserModel.fromJson(userData);
-    } else {
-      throw Exception(response['message']);
+      print('✓ PROFILE IMAGE UPLOAD API RESPONSE: ${response['success']}');
+
+      if (response['success'] == true) {
+        final userData = response['data'];
+        return UserModel.fromJson(userData, token: token);
+      } else {
+        print('✗ Profile image upload failed: ${response['message']}');
+        throw Exception(response['message'] ?? 'Upload failed');
+      }
+    } catch (e) {
+      print('✗ PROFILE IMAGE UPLOAD ERROR: $e');
+      rethrow;
     }
-  }
-
-  @override
-  bool isLoggedIn() {
-    return HiveService.isLoggedIn();
   }
 }
