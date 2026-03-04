@@ -63,17 +63,22 @@ class ApiService {
   // Response handler
   Map<String, dynamic> _handleResponse(http.Response response) {
     try {
+      print('📡 API Response Status: ${response.statusCode}');
+      print('📡 API Response Body: ${response.body}');
+      
       final body = jsonDecode(response.body);
       
       if (response.statusCode >= 200 && response.statusCode < 300) {
+        print('✓ API call successful');
         return body;
       } else {
+        print('✗ API Error: ${body['message'] ?? 'Unknown error'}');
         throw Exception(body['message'] ?? 'Something went wrong');
       }
     } catch (e) {
-      print('Response parsing error: $e');
-      print('Status code: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      print('❌ Response parsing error: $e');
+      print('❌ Status code: ${response.statusCode}');
+      print('❌ Response body: ${response.body}');
       throw Exception('Invalid response format: ${e.toString()}');
     }
   }
