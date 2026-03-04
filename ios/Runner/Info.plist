@@ -49,5 +49,11 @@
 	<string>We need access to your photo library to upload your profile image.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>We need access to save your profile image.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Trek garda GPS le distance ra route track garcha.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Barometer sensor le altitude gain/loss track garcha trek ma.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Payment confirm garna Face ID use huncha.</string>
 </dict>
 </plist>
