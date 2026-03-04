@@ -5,57 +5,14 @@ class OnboardingScreen3 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Image
-            ClipRRect(
-              child: Image.asset(
-                'assets/images/Adventure.png',
-                width: 500,
-                height: 250,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 250,
-                    child: Icon(
-                      Icons.hiking,
-                      size: 150,
-                      color: Colors.blue[300],
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 50),
-            
-            // Title
-            Text(
-              'Ready to Adventure',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue[800],
-              ),
-            ),
-            const SizedBox(height: 20),
-            
-            // Description
-            Text(
-              'Connect with guides, book your trek, and get real-time updates. Your Himalayan adventure starts here!',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[700],
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
+    return Image.asset(
+      'assets/images/Adventure.png',
+      fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
+      errorBuilder: (_, __, ___) => Container(
+        color: const Color(0xFF0D1B3E),
+        child: const Icon(Icons.hiking, size: 120, color: Colors.white24),
       ),
     );
   }
